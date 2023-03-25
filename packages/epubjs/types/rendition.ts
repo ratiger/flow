@@ -15,18 +15,21 @@ export enum RenditionSpread {
   Always = 'always',
 }
 
+export enum RenditionFlow {
+  // Auto = 'auto', // default is paginated
+  Paginated = 'paginated',
+  Scrolled = 'scrolled',
+  // ScrolledContinuous = 'scrolled-continuous',
+  // ScrolledDoc = 'scrolled-doc',
+}
+
 export interface RenditionOptions {
   width?: number | string
   height?: number | string
   ignoreClass?: string
   manager?: 'default' | 'continuous' | Function | object
   view?: 'iframe' | Function | object
-  flow?:
-    | 'auto'
-    | 'paginated'
-    | 'scrolled'
-    | 'scrolled-continuous'
-    | 'scrolled-doc'
+  flow?: RenditionFlow
   layout?: 'reflowable' | 'pre-paginated'
   spread?: RenditionSpread
   minSpreadWidth?: number

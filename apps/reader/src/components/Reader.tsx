@@ -14,7 +14,7 @@ import { useSetRecoilState } from 'recoil'
 import useTilg from 'tilg'
 import { useSnapshot } from 'valtio'
 
-import { RenditionSpread } from '@flow/epubjs/types/rendition'
+import { RenditionSpread, RenditionFlow } from '@flow/epubjs/types/rendition'
 import { navbarState } from '@flow/reader/state'
 
 import { db } from '../db'
@@ -48,12 +48,16 @@ function handleKeyDown(tab?: BookTab) {
     try {
       switch (e.code) {
         case 'ArrowLeft':
-        case 'ArrowUp':
           tab?.prev()
           break
+        case 'ArrowUp':
+          // tab?.prev()
+          break
         case 'ArrowRight':
-        case 'ArrowDown':
           tab?.next()
+          break
+        case 'ArrowDown':
+          // tab?.next()
           break
         case 'Space':
           e.shiftKey ? tab?.prev() : tab?.next()
@@ -262,6 +266,11 @@ function BookPane({ tab, onMouseDown }: BookPaneProps) {
     rendition?.spread(typography.spread ?? RenditionSpread.Auto)
   }, [typography.spread, rendition])
 
+  useEffect(() => {
+    // 模仿上面的
+    rendition?.flow(typography.flow ?? RenditionFlow.Scrolled)
+  }, [typography.flow, rendition])
+
   useEffect(() => applyCustomStyle(), [applyCustomStyle])
 
   useEffect(() => {
@@ -326,15 +335,52 @@ function BookPane({ tab, onMouseDown }: BookPaneProps) {
     }
   })
 
-  useEventListener(iframe, 'wheel', (e) => {
-    if (e.deltaY < 0) {
-      tab.prev()
-    } else {
-      tab.next()
-    }
-  })
+  useEventListener(
+    iframe,
+    'wheel',
+    (e) => {
+      if (typography.flow == RenditionFlow.Paginated) {
+        if (e.deltaY < 0) {
+          tab.prev()
+        } else {
+          tab.next()
+        }
+      }
+    },
+    [typography.flow, rendition],
+  )
 
-  useEventListener(iframe, 'keydown', handleKeyDown(tab))
+  useEventListener(
+    iframe,
+    'keydown',
+    (e: KeyboardEvent) => {
+      try {
+        switch (e.code) {
+          case 'ArrowLeft':
+            tab?.prev()
+            break
+          case 'ArrowUp':
+            if (typography.flow == RenditionFlow.Paginated) {
+              tab?.prev()
+            }
+            break
+          case 'ArrowRight':
+            tab?.next()
+            break
+          case 'ArrowDown':
+            if (typography.flow == RenditionFlow.Paginated) {
+              tab?.next()
+            }
+            break
+          case 'Space':
+            e.shiftKey ? tab?.prev() : tab?.next()
+        }
+      } catch (error) {
+        // ignore `rendition is undefined` error
+      }
+    },
+    [typography.flow, rendition],
+  )
 
   useEventListener(iframe, 'touchstart', (e) => {
     const x0 = e.targetTouches[0]?.clientX ?? 0

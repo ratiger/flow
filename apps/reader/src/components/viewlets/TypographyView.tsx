@@ -2,7 +2,7 @@ import clsx from 'clsx'
 import { useCallback, useRef, useState } from 'react'
 import { MdAdd, MdRemove } from 'react-icons/md'
 
-import { RenditionSpread } from '@flow/epubjs/types/rendition'
+import { RenditionFlow, RenditionSpread } from '@flow/epubjs/types/rendition'
 import { useTranslation } from '@flow/reader/hooks'
 import { reader, useReaderSnapshot } from '@flow/reader/models'
 import {
@@ -28,7 +28,7 @@ export const TypographyView: React.FC<PaneViewProps> = (props) => {
   const [scope, setScope] = useState(TypographyScope.Book)
   const t = useTranslation('typography')
 
-  const { fontFamily, fontSize, fontWeight, lineHeight, zoom, spread } =
+  const { fontFamily, fontSize, fontWeight, lineHeight, zoom, spread, flow } =
     scope === TypographyScope.Book
       ? focusedBookTab?.book.configuration?.typography ?? defaultSettings
       : settings
@@ -83,6 +83,7 @@ export const TypographyView: React.FC<PaneViewProps> = (props) => {
         key={`${scope}${focusedBookTab?.id}`}
       >
         <Select
+          disabled={flow != RenditionFlow.Paginated}
           name={t('page_view')}
           value={spread ?? RenditionSpread.None}
           onChange={(e) => {
@@ -95,6 +96,22 @@ export const TypographyView: React.FC<PaneViewProps> = (props) => {
           <option value={RenditionSpread.Auto}>
             {t('page_view.double_page')}
           </option>
+        </Select>
+        <Select
+          name={t('flow')}
+          value={flow ?? RenditionFlow.Scrolled}
+          onChange={(e) => {
+            setTypography('flow', e.target.value as RenditionFlow)
+          }}
+        >
+          <option value={RenditionFlow.Scrolled}>{t('flow.scrolled')}</option>
+          {/* <option value={RenditionFlow.ScrolledContinuous}>
+            {t('flow.scrolled_continuous')}
+          </option>
+          <option value={RenditionFlow.ScrolledDoc}>
+            {t('flow.scrolled_doc')}
+          </option> */}
+          <option value={RenditionFlow.Paginated}>{t('flow.paginated')}</option>
         </Select>
         <Select
           name={t('font_family')}
